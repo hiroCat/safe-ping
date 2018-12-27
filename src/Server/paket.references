@@ -1,4 +1,5 @@
+System.Reactive
 group Server
-    FSharp.Core
-    Saturn
-    Thoth.Json.Giraffe
+FSharp.Core
+Saturn
+Thoth.Json.Giraffe
