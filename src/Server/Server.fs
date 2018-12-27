@@ -14,10 +14,13 @@ let port = 8085us
 
 let getInitCounter() : Task<Counter> = task { return { Value = 42 } }
 
+let getInitStatus() : Task<Enviroment list> = task {return List.Empty}
+
 let webApp = router {
     get "/api/init" (fun next ctx ->
         task {
             let! counter = getInitCounter()
+            let! dudu = getInitStatus()
             return! Successful.OK counter next ctx
         })
 }
