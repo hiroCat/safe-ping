@@ -7,21 +7,37 @@ open FSharp.Control.Tasks.V2
 open Giraffe
 open Saturn
 open Shared
-
+open System
 
 let publicPath = Path.GetFullPath "../Client/public"
 let port = 8085us
 
-let getInitCounter() : Task<Counter> = task { return { Value = 42 } }
+let stEnd (envSt:ApiEndpConfig) =
+    let (r,res) = Helpers.reqPost envSt.Endpoint envSt.Body
+    {Name = envSt.Name; Status = (r.StatusCode |> other.statusC )}
 
-let getInitStatus() : Task<Enviroment list> = task {return List.Empty}
+let st (config:EnviromentConfig) =
+    {   Id = new Guid();
+        Name = config.Name;
+        PingStatus = (Helpers.IpUp config.Ip 1) |> other.status;
+        TimeStamp = DateTime.Now;
+        EndpointsQ = (config.ApiEndpointsConfig |> List.map stEnd)}
+
+let getDataFun (enviromentConfigs:EnviromentConfig list) = enviromentConfigs |> List.map st
+
+let InitStatus() : Task<EnviromentStatus list> =
+    task {  Helpers.obs getDataFun
+            return  List.Empty }
 
 let webApp = router {
-    get "/api/init" (fun next ctx ->
+    get "/api/init-process" (fun next ctx ->
         task {
-            let! counter = getInitCounter()
-            let! dudu = getInitStatus()
-            return! Successful.OK counter next ctx
+            InitStatus()
+            return! Successful.OK "" next ctx
+        })
+    get "/api/lastVal" (fun next ctx ->
+        task {
+            return! Successful.OK None next ctx
         })
 }
 

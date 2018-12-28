@@ -21,26 +21,28 @@ open Fable.FontAwesome.Free
 // in this case, we are keeping track of a counter
 // we mark it as optional, because initially it will not be available from the client
 // the initial value will be requested from server
-type Model = { Counter: Counter option }
+type Model = { Status: EnviromentStatus list }
 
 // The Msg type defines what events/actions can occur while the application is running
 // the state of the application changes *only* in reaction to these events
 type Msg =
-| Increment
-| Decrement
-| InitialCountLoaded of Result<Counter, exn>
+| UpdateVal
+| LastVal
+| InitialProcess of Result<string, exn>
 
-let initialCounter = fetchAs<Counter> "/api/init" (Decode.Auto.generateDecoder())
+//let initialCounter = fetchAs<Counter> "/api/init" (Decode.Auto.generateDecoder())
+let lasValue = fetchAs<EnviromentStatus list> "/api/lastVal" (Decode.Auto.generateDecoder())
+let l = fetchAs<string> "/api/init-process" (Decode.Auto.generateDecoder())
 
 // defines the initial state and initial command (= side-effect) of the application
 let init () : Model * Cmd<Msg> =
-    let initialModel = { Counter = None }
+    let initialModel = { Status = List.empty }
     let loadCountCmd =
         Cmd.ofPromise
-            initialCounter
+            l
             []
-            (Ok >> InitialCountLoaded)
-            (Error >> InitialCountLoaded)
+            (Ok >> InitialProcess)
+            (Error >> InitialProcess)
     initialModel, loadCountCmd
 
 
@@ -49,14 +51,14 @@ let init () : Model * Cmd<Msg> =
 // It can also run side-effects (encoded as commands) like calling the server via Http.
 // these commands in turn, can dispatch messages to which the update function will react.
 let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
-    match currentModel.Counter, msg with
+    match currentModel.Status, msg with
     | Some counter, Increment ->
         let nextModel = { currentModel with Counter = Some { Value = counter.Value + 1 } }
         nextModel, Cmd.none
     | Some counter, Decrement ->
         let nextModel = { currentModel with Counter = Some { Value = counter.Value - 1 } }
         nextModel, Cmd.none
-    | _, InitialCountLoaded (Ok initialCount)->
+    | _, InitialProcess (Ok initialCount)->
         let nextModel = { Counter = Some initialCount }
         nextModel, Cmd.none
 
