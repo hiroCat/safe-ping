@@ -1,10 +1,9 @@
-
 SET ANSI_NULLS ON
 SET QUOTED_IDENTIFIER ON
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[t_enviroment_config]') AND type in (N'U'))
 BEGIN
-CREATE TABLE [dbo].[t_enviroment_confi](
+CREATE TABLE [dbo].[t_enviroment_config](
 	[id] [uniqueidentifier] primary key NOT NULL,
 	[name] [nvarchar](50) NOT NULL,
 	[creationDate] [Datetime] NOT NULL DEFAULT(GETDATE()),
